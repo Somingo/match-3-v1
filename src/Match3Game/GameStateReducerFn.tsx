@@ -1,6 +1,6 @@
 import {IGameState} from './IGameState';
 import {LINE_WIDTH, LINES} from './config';
-import {IGem} from './IGem';
+import {createGem, IGem} from './IGem';
 
 const moveCursorLeft = (state: IGameState): IGameState => ({
     ...state,
@@ -79,7 +79,7 @@ const markForRemove = (nextTable: IGem[]): boolean => {
 export const removeGems = (state: IGameState): IGameState => {
     if (markForRemove(state.table)) {
         const additionalScore = state.table.reduce((points, gem) => points + gem.points, 0);
-        const nextTable = state.table.map(gem => gem.points ? {type: 0, points: 0} : gem);
+        const nextTable = state.table.map(gem => gem.points ? createGem(0) : gem);
         return removeGems(applyGravity({...state, table: nextTable, score: state.score + additionalScore}));
     }
     return state;
