@@ -16,7 +16,9 @@ export const Match3Game:FC = ()=> {
         0, 0, 1, 0, 0, 1, 0,
         0, 0, 1, 0, 0, 1, 1,
         0, 0, 1, 1, 0, 1, 1,
-    ]
+    ];
+
+    const cursor = 21;
 
     return  (
         <Box sx={{
@@ -28,7 +30,7 @@ export const Match3Game:FC = ()=> {
     }}>
         <Typography variant="h3">Game</Typography>
             <Box sx={{display: 'flex', width:'100%', maxWidth: '500px', flexWrap: 'wrap'}}>
-                {table.map((n)=> <Gem type={n} />)}
+                {table.map((n, index)=> <Gem type={n} cursorLeft={cursor===index} cursorRight={cursor+1===index}/>)}
             </Box>
     </Box>
     );
