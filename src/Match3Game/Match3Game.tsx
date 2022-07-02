@@ -1,13 +1,16 @@
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC, useEffect, useReducer} from 'react';
 import {Box, Typography} from '@mui/material';
 import {Gem} from './Gem';
 
 const LINE_WIDTH = 7;
-const HEIGHT = 11*LINE_WIDTH-1;
 
-export const Match3Game:FC = ()=> {
+interface IGameState {
+    cursor: number;
+    table: number[];
+}
 
-    const [table, setTable] = useState([
+const initialState: IGameState = {
+    table: [
         0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0,
@@ -19,41 +22,64 @@ export const Match3Game:FC = ()=> {
         0, 0, 1, 0, 0, 1, 0,
         0, 0, 1, 0, 0, 1, 1,
         0, 0, 1, 1, 0, 1, 1,
-    ]);
+    ], cursor: 35,
+};
 
-    const [cursor, setCursor] = useState(21);
+const gameStateReducer = (s: IGameState, a: number): IGameState => {
+    switch (a) {
+        // left 37
+        case 37:
+            return {...s, cursor: s.cursor % LINE_WIDTH - 1 > -1 ? s.cursor - 1 : s.cursor};
+        // up 38HEIGHT
+        case 38:
+            return {...s, cursor: s.cursor - LINE_WIDTH > -1 ? s.cursor - LINE_WIDTH : s.cursor};
+        // right 39
+        case 39:
+            return {...s, cursor: s.cursor % LINE_WIDTH + 2 < LINE_WIDTH ? s.cursor + 1 : s.cursor};
+        // down 40
+        case 40:
+            return {
+                ...s,
+                cursor: s.cursor + LINE_WIDTH < s.table.length - 1 ? s.cursor + LINE_WIDTH : s.cursor,
+            };
+        // space 32
+        case 32:
+            const nextState = [...s.table];
+            const a = nextState[s.cursor];
+            nextState[s.cursor] = nextState[s.cursor + 1];
+            nextState[s.cursor + 1] = a;
+            return {...s, table: nextState};
 
-    useEffect(()=>{
-        const keyPressListener = (e: KeyboardEvent)=> {
-            switch (e.keyCode) {
-                // left 37
-                case 37: setCursor((prevState => prevState%LINE_WIDTH-1>-1?prevState-1:prevState)); break;
-                // up 38HEIGHT
-                case 38: setCursor((prevState => prevState-LINE_WIDTH>-1?prevState-LINE_WIDTH:prevState)); break;
-                // right 39
-                case 39: setCursor((prevState => prevState%LINE_WIDTH+2<LINE_WIDTH?prevState+1:prevState)); break;
-                // down 40
-                case 40: setCursor((prevState => prevState+LINE_WIDTH<HEIGHT?prevState+LINE_WIDTH:prevState)); break;
-            }
+    }
+    return s;
+};
+
+export const Match3Game: FC = () => {
+    const [{table, cursor}, dispatch] = useReducer(gameStateReducer, initialState);
+
+    useEffect(() => {
+        const keyPressListener = (e: KeyboardEvent) => {
+            dispatch(e.keyCode);
         };
         document.body.addEventListener('keyup', keyPressListener);
-       return ()=> {
-           document.body.removeEventListener('keyup', keyPressListener);
-       }
-    }, [setCursor, setTable]);
+        return () => {
+            document.body.removeEventListener('keyup', keyPressListener);
+        }
+    }, []);
 
-    return  (
+    return (
         <Box sx={{
-        flexGrow: 1,
-        backgroundColor: 'whitesmoke',
-        display: 'block',
-        justifyContent: 'center',
-        alignItems: 'center'
-    }}>
-        <Typography variant="h3">Game</Typography>
-            <Box sx={{display: 'flex', width:'100%', maxWidth: '500px', flexWrap: 'wrap'}}>
-                {table.map((n, index)=> <Gem type={n} cursorLeft={cursor===index} cursorRight={cursor+1===index}/>)}
+            flexGrow: 1,
+            backgroundColor: 'whitesmoke',
+            display: 'block',
+            justifyContent: 'center',
+            alignItems: 'center',
+        }}>
+            <Typography variant="h3">Game</Typography>
+            <Box sx={{display: 'flex', width: '100%', maxWidth: '500px', flexWrap: 'wrap'}}>
+                {table.map((n, index) => <Gem type={n} cursorLeft={cursor === index}
+                                              cursorRight={cursor + 1 === index}/>)}
             </Box>
-    </Box>
+        </Box>
     );
 };
