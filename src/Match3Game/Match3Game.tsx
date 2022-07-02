@@ -1,8 +1,9 @@
 import React, {FC, useEffect, useReducer} from 'react';
 import {Box, Typography} from '@mui/material';
-import {Gem} from './Gem';
+import {Gem, gemColors} from './Gem';
 
 const LINE_WIDTH = 7;
+const LINES = 11;
 
 interface IGameState {
     cursor: number;
@@ -10,19 +11,8 @@ interface IGameState {
 }
 
 const initialState: IGameState = {
-    table: [
-        0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
-        0, 0, 1, 0, 0, 1, 0,
-        0, 0, 1, 0, 0, 1, 1,
-        0, 0, 1, 1, 0, 1, 1,
-    ], cursor: 35,
+    table: new Array(LINE_WIDTH * LINES).fill(0).map(() => Math.floor(Math.random() * gemColors.length)),
+    cursor: 35,
 };
 
 const moveCursorLeft = (state: IGameState): IGameState => ({
@@ -48,11 +38,11 @@ const swapGems = (state: IGameState): IGameState => {
     nextTable[state.cursor + 1] = a;
     return {...state, table: nextTable};
 };
-const applyGravityIteration = (nextTable: number[]):boolean => {
+const applyGravityIteration = (nextTable: number[]): boolean => {
     let hasMoving = false;
-    for (let i = nextTable.length-1-LINE_WIDTH; i > -1; i--) {
-        if (nextTable[i+LINE_WIDTH] === 0 && nextTable[i] !== 0) {
-            nextTable[i+LINE_WIDTH] = nextTable[i];
+    for (let i = nextTable.length - 1 - LINE_WIDTH; i > -1; i--) {
+        if (nextTable[i + LINE_WIDTH] === 0 && nextTable[i] !== 0) {
+            nextTable[i + LINE_WIDTH] = nextTable[i];
             nextTable[i] = 0;
             hasMoving = true;
         }
@@ -61,7 +51,8 @@ const applyGravityIteration = (nextTable: number[]):boolean => {
 }
 const applyGravity = (state: IGameState): IGameState => {
     const nextTable = [...state.table];
-    while(applyGravityIteration(nextTable)) {}
+    while (applyGravityIteration(nextTable)) {
+    }
     return {...state, table: nextTable};
 }
 
@@ -90,7 +81,7 @@ const gameStateReducer = (state: IGameState, action: number): IGameState => {
 };
 
 export const Match3Game: FC = () => {
-    const [{table, cursor}, dispatch] = useReducer(gameStateReducer, initialState);
+    const [{table, cursor}, dispatch] = useReducer(gameStateReducer, initialState, applyGravity);
 
     useEffect(() => {
         const keyPressListener = (e: KeyboardEvent) => {

@@ -9,8 +9,10 @@ const cursorRightSx: SxProps<Theme> = {
   borderColor: '#000 #000 #000 #fff',
 };
 
+export const gemColors = ['#fff', '#f00', '#0f0', '#00f', '#f0f']
+
 export const Gem: FC<{type: number, cursorLeft: boolean, cursorRight: boolean}> = ({type, cursorLeft, cursorRight}) => {
-    return <Box sx={{flex: '14% 0 0', paddingTop: '14%', backgroundColor: type?'#00f':'#fff', border: '1px solid #fff',
+    return <Box sx={{flex: '14% 0 0', paddingTop: '14%', backgroundColor: gemColors[type], border: '1px solid #fff',
       ...(cursorLeft?cursorLeftSx:{}),
       ...(cursorRight?cursorRightSx:{}),
     }}/>
