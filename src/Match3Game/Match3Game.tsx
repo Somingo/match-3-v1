@@ -10,7 +10,7 @@ export const Match3Game:FC = ()=> {
         justifyContent: 'center',
         alignItems: 'center'
     }}>
-        <Typography variant="h3">Home</Typography>
+        <Typography variant="h3">Game</Typography>
     </Box>
     );
 };
