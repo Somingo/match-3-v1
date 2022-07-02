@@ -21,7 +21,6 @@ export const Match3Game: FC = () => {
     useEffect(() => {
         const keyPressListener = (e: KeyboardEvent) => {
             dispatch(e.keyCode);
-            console.log(e.keyCode);
         };
         document.body.addEventListener('keyup', keyPressListener);
         return () => {
