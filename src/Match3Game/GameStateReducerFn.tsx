@@ -34,12 +34,15 @@ const swapGems = (state: IGameState): IGameState => {
     return {...state, table: nextTable};
 };
 
+let fallingID = 0;
+
 const applyGravityIteration = (nextTable: IGem[]): boolean => {
     let hasMoving = false;
     for (let i = nextTable.length - 1 - LINE_WIDTH; i > -1; i--) {
-        if (nextTable[i + LINE_WIDTH].type === 0 && nextTable[i].type !== 0 && !nextTable[i].removing && !nextTable[i].swapping) {
+        if (nextTable[i + LINE_WIDTH].type === 0 && nextTable[i].type !== 0 && !nextTable[i].removing&& !nextTable[i].falling && !nextTable[i].swapping) {
+            if (!hasMoving) fallingID++;
             const temp = nextTable[i + LINE_WIDTH];
-            nextTable[i + LINE_WIDTH] = nextTable[i];
+            nextTable[i + LINE_WIDTH] = {...nextTable[i], falling: fallingID};
             nextTable[i] = temp;
             hasMoving = true;
         }
@@ -54,11 +57,19 @@ const applyGravity = (state: IGameState): IGameState => {
     return {...state, table: nextTable};
 }
 
+let removingId = 1;
+
 const checkGemsForRemove = (gemsToCheck: IGem[]): boolean => {
-    const gems: IGem[] = gemsToCheck.filter(gem => !gem.removing && !gem.swapping && gem.type === gemsToCheck[0].type);
+    const gems: IGem[] = gemsToCheck.filter(gem =>
+        (!gem.removing || gem.removing === removingId)
+        && !gem.swapping
+        && !gem.falling
+        && gem.type === gemsToCheck[0].type
+    );
     if (gems.length === 3) {
         gems.forEach(gem => {
             gem.points++;
+            gem.removing = removingId;
             gem.swapping = 0;
         });
         return true;
@@ -67,11 +78,9 @@ const checkGemsForRemove = (gemsToCheck: IGem[]): boolean => {
 }
 
 export const markForRemove = (state: IGameState): IGameState => {
-    const nextTable = state.table.map(gem => gem.removing ? gem : {...gem, points: 0});
+    const nextTable = state.table.map(gem => gem.removing || gem.falling || gem.swapping ? gem : {...gem, points: 0});
     let hasRemovable = false;
-    nextTable.filter(gem => !gem.removing).forEach(gem => {
-        gem.points = 0;
-    });
+    removingId++;
     for (let i = 0; i < nextTable.length; i++) {
         // horizontal
         if (nextTable[i].type !== 0 && i % LINE_WIDTH < LINE_WIDTH - 2) {
@@ -82,19 +91,20 @@ export const markForRemove = (state: IGameState): IGameState => {
             hasRemovable = checkGemsForRemove([nextTable[i], nextTable[i + LINE_WIDTH], nextTable[i + LINE_WIDTH_2X]]) || hasRemovable;
         }
     }
-    nextTable.filter(gem => gem.points !== 0).forEach(gem => {
-        gem.removing = true;
-    });
     return hasRemovable ? {...state, table: nextTable} : state;
 }
 
 export const removeGem = (state: IGameState, target: IGem): IGameState => {
-    const nextTable = state.table.map(gem => gem === target ? createGem(0) : gem);
+    const nextTable = state.table.map(gem => gem.removing === target.removing ? createGem(0) : gem);
     return {...state, table: nextTable, score: state.score + target.points};
 }
 
 export const swapEnd = (state: IGameState, target: IGem): IGameState => {
     const nextTable = state.table.map(gem => gem === target ? {...gem, swapping: 0} : gem);
+    return {...state, table: nextTable};
+}
+export const fallEnd = (state: IGameState, target: IGem): IGameState => {
+    const nextTable = state.table.map(gem => gem.falling === target.falling ? {...gem, falling: 0} : gem);
     return {...state, table: nextTable};
 }
 
@@ -120,6 +130,8 @@ export const gameStateReducerFn = (state: IGameState, action: { type: string, pa
             return action.payload ? markForRemove(applyGravity(removeGem(state, action.payload))) : state;
         case 'SWAP_END':
             return action.payload ? markForRemove(applyGravity(swapEnd(state, action.payload))) : state;
+        case 'FALL_END':
+            return action.payload ? markForRemove(applyGravity(fallEnd(state, action.payload))) : state;
     }
     return state;
 };

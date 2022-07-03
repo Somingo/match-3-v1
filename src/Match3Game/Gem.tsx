@@ -17,6 +17,7 @@ export interface GemProps {
     cursorRight: boolean,
     onRemove: () => void,
     onSwapped: () => void,
+    onFallen: () => void,
 }
 
 const removingAnimationKeyframes = keyframes`
@@ -34,7 +35,18 @@ const removingAnimationKeyframes = keyframes`
   }
 `;
 
-const removingAnimation: SxProps<Theme> = {animation: removingAnimationKeyframes + ' 1s ease '}
+const removingAnimation: SxProps<Theme> = {animation: removingAnimationKeyframes + ' 1s ease '};
+
+const fallingAnimationKeyframes = keyframes`
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+`;
+
+const fallingAnimation: SxProps<Theme> = {animation: fallingAnimationKeyframes + ' 0.1s linear '};
 
 const swappingLeftAnimationKeyframes = keyframes`
   0% {
@@ -78,7 +90,7 @@ const swappingRightAnimation: SxProps<Theme> = {animation: swappingRightAnimatio
 
 const swappingAnimations: SxProps<Theme>[] = [{}, swappingLeftAnimation, swappingRightAnimation];
 
-export const Gem: FC<GemProps> = ({gem: {type, points, removing, id, swapping}, cursorLeft, cursorRight, onRemove, onSwapped}) => {
+export const Gem: FC<GemProps> = ({gem: {type, points, removing, id, swapping, falling}, cursorLeft, cursorRight, onRemove, onSwapped, onFallen}) => {
     return <Box sx={{
         flex: '14% 0 0',
         paddingTop: '14%',
@@ -94,9 +106,11 @@ export const Gem: FC<GemProps> = ({gem: {type, points, removing, id, swapping}, 
         top: '5%',
         backgroundColor: GEM_COLORS[type],
         ...(removing ? removingAnimation : {}),
+        ...(falling ? fallingAnimation : {}),
         ...swappingAnimations[swapping],
     }} onAnimationEnd={() => {
         if (removing) onRemove();
         if (swapping) onSwapped();
+        if (falling) onFallen();
     }}>{id} - {points}</Box></Box>
 }

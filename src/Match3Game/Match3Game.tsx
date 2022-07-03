@@ -48,6 +48,7 @@ export const Match3Game: FC = () => {
                                                 cursorRight={cursor + 1 === index}
                                                 onRemove={() => dispatch({type: 'REMOVE', payload: gem})}
                                                 onSwapped={() => dispatch({type: 'SWAP_END', payload: gem})}
+                                                onFallen={() => dispatch({type: 'FALL_END', payload: gem})}
                 />)}
             </Box>
         </Box>
