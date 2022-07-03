@@ -52,8 +52,7 @@ const applyGravityIteration = (nextTable: IGem[]): boolean => {
 
 const applyGravity = (state: IGameState): IGameState => {
     const nextTable = [...state.table];
-    while (applyGravityIteration(nextTable)) {
-    }
+    applyGravityIteration(nextTable)
     return {...state, table: nextTable};
 }
 
