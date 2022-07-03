@@ -4,7 +4,7 @@ import {Gem} from './Gem';
 import {GEM_COLORS, LINE_WIDTH, LINES} from './config';
 import {createGem, IGem} from './IGem';
 import {IGameState} from './IGameState';
-import {gameStateReducerFn, removeGems} from './GameStateReducerFn';
+import {gameStateReducerFn} from './GameStateReducerFn';
 
 const initialState: IGameState = {
     table: new Array(LINE_WIDTH * LINES)
@@ -16,11 +16,11 @@ const initialState: IGameState = {
 };
 
 export const Match3Game: FC = () => {
-    const [{table, cursor, score}, dispatch] = useReducer(gameStateReducerFn, initialState, removeGems);
+    const [{table, cursor, score}, dispatch] = useReducer(gameStateReducerFn, initialState);
 
     useEffect(() => {
         const keyPressListener = (e: KeyboardEvent) => {
-            dispatch(e.keyCode);
+            dispatch({type: 'KEY' + e.keyCode});
         };
         document.body.addEventListener('keyup', keyPressListener);
         return () => {
@@ -37,9 +37,16 @@ export const Match3Game: FC = () => {
             alignItems: 'center',
         }}>
             <Typography variant="h3">Score: {score}</Typography>
-            <Box sx={{display: 'flex', width: '100%', maxWidth: '500px', flexWrap: 'wrap'}}>
-                {table.map((gem, index) => <Gem key={gem.id} gem={gem} cursorLeft={cursor === index}
-                                                cursorRight={cursor + 1 === index}/>)}
+            <Box sx={{
+                display: 'flex',
+                width: '100%',
+                maxWidth: '500px',
+                flexWrap: 'wrap',
+                backgroundColor: 'secondary.light',
+            }}>
+                {table.map((gem, index) => <Gem gem={gem} cursorLeft={cursor === index} key={gem.id}
+                                                cursorRight={cursor + 1 === index}
+                                                onRemove={() => dispatch({type: 'REMOVE', payload: gem})}/>)}
             </Box>
         </Box>
     );
