@@ -4,7 +4,7 @@ import {Gem} from './Gem';
 import {GEM_COLORS, LINE_WIDTH, LINES} from './config';
 import {createGem, IGem} from './IGem';
 import {IGameState} from './IGameState';
-import {gameStateReducerFn} from './GameStateReducerFn';
+import {gameStateReducerFn, markForRemove} from './GameStateReducerFn';
 
 const initialState: IGameState = {
     table: new Array(LINE_WIDTH * LINES)
@@ -16,7 +16,7 @@ const initialState: IGameState = {
 };
 
 export const Match3Game: FC = () => {
-    const [{table, cursor, score}, dispatch] = useReducer(gameStateReducerFn, initialState);
+    const [{table, cursor, score}, dispatch] = useReducer(gameStateReducerFn, initialState, markForRemove);
 
     useEffect(() => {
         const keyPressListener = (e: KeyboardEvent) => {
@@ -46,7 +46,9 @@ export const Match3Game: FC = () => {
             }}>
                 {table.map((gem, index) => <Gem gem={gem} cursorLeft={cursor === index} key={gem.id}
                                                 cursorRight={cursor + 1 === index}
-                                                onRemove={() => dispatch({type: 'REMOVE', payload: gem})}/>)}
+                                                onRemove={() => dispatch({type: 'REMOVE', payload: gem})}
+                                                onSwapped={() => dispatch({type: 'SWAP_END', payload: gem})}
+                />)}
             </Box>
         </Box>
     );

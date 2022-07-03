@@ -16,6 +16,7 @@ export interface GemProps {
     cursorLeft: boolean,
     cursorRight: boolean,
     onRemove: () => void,
+    onSwapped: () => void,
 }
 
 const removingAnimationKeyframes = keyframes`
@@ -35,7 +36,49 @@ const removingAnimationKeyframes = keyframes`
 
 const removingAnimation: SxProps<Theme> = {animation: removingAnimationKeyframes + ' 1s ease '}
 
-export const Gem: FC<GemProps> = ({gem: {type, points, removing, id}, cursorLeft, cursorRight, onRemove}) => {
+const swappingLeftAnimationKeyframes = keyframes`
+  0% {
+    transform: scale(100%, 100%);
+    left: 100%;
+    top: 0;
+  }
+  50% {
+    transform: scale(75%, 75%);
+    left: 50%;
+    top: 12%;
+  }
+  100% {
+    transform: scale(100%, 100%);
+    left: 0;
+    top: 0;
+  }
+`;
+
+const swappingLeftAnimation: SxProps<Theme> = {animation: swappingLeftAnimationKeyframes + ' 0.2s ease-in-out '}
+
+const swappingRightAnimationKeyframes = keyframes`
+  0% {
+    transform: scale(100%, 100%);
+    left: -100%;
+    top: 0;
+  }
+  50% {
+    transform: scale(125%, 125%);
+    left: -50%;
+    top: -12%;
+  }
+  100% {
+    transform: scale(100%, 100%);
+    left: 0;
+    top: 0;
+  }
+`;
+
+const swappingRightAnimation: SxProps<Theme> = {animation: swappingRightAnimationKeyframes + ' 0.2s ease-in-out '}
+
+const swappingAnimations: SxProps<Theme>[] = [{}, swappingLeftAnimation, swappingRightAnimation];
+
+export const Gem: FC<GemProps> = ({gem: {type, points, removing, id, swapping}, cursorLeft, cursorRight, onRemove, onSwapped}) => {
     return <Box sx={{
         flex: '14% 0 0',
         paddingTop: '14%',
@@ -51,7 +94,9 @@ export const Gem: FC<GemProps> = ({gem: {type, points, removing, id}, cursorLeft
         top: '5%',
         backgroundColor: GEM_COLORS[type],
         ...(removing ? removingAnimation : {}),
+        ...swappingAnimations[swapping],
     }} onAnimationEnd={() => {
         if (removing) onRemove();
+        if (swapping) onSwapped();
     }}>{id} - {points}</Box></Box>
 }
